@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wildfire Detection</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background-color: #f0f0f0;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      input[type="file"] {
+        display: block;
+        margin: 20px 0;
+      }
+
+      button {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-size: 16px;
+        border-radius: 5px;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+
+      .result {
+        margin-top: 20px;
+        font-size: 18px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Wildfire Detection</h2>
+      <p>Upload an image for wildfire detection prediction.</p>
+
+      <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" id="image" name="image" accept="image/*" required />
+        <button type="submit">Upload and Predict</button>
+      </form>
+
+      <div class="result" id="result"></div>
+    </div>
+
+    <script>
+      const form = document.getElementById("upload-form");
+      const resultDiv = document.getElementById("result");
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+        resultDiv.textContent = "Uploading and predicting...";
+
+        try {
+          const response = await fetch("http://localhost:3001/predict", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error("Error predicting image");
+          }
+
+          const data = await response.json();
+
+          // Determine "Fire" or "No Fire" based on model predictions
+          const getPredictionLabel = (predictions) => {
+            return predictions[1] > predictions[0] ? "Fire" : "No Fire";
+          };
+
+          const model1Result = data.model1 < 0.5 ? "Fire" : "No Fire";
+          const model2Result = data.model2[1] < 0.5 ? "Fire" : "No Fire";
+
+          //   const model2Result = getPredictionLabel(data.model2);
+
+          resultDiv.innerHTML = `
+              <p><strong>Model 1 Prediction:</strong> ${model1Result} </p>
+              <p>--> ${data.model1}</p>
+            
+              <p><strong>Model 2 Prediction:</strong> ${model2Result} </p>
+              <p>--> ${data.model2}</p>
+            `;
+        } catch (error) {
+          resultDiv.textContent = `Error: ${error.message}`;
+        }
+      });
+    </script>
+  </body>
+</html>
