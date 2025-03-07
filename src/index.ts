@@ -42,8 +42,9 @@ async function loadModels() {
 loadModels(); // Load the models when the server starts
 
 // Serve a basic route
-app.get("/", (req: Request, res: Response) => {
-  res.send("TensorFlow.js Model Hosting Server");
+app.get("/ping", (req, res) => {
+  console.log("hit /ping !");
+  res.json({ status: "online" });
 });
 
 // Endpoint to upload and process an image
@@ -112,6 +113,6 @@ app.post("/predict", upload.single("image"), async (req: any, res: any) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
